@@ -43,4 +43,4 @@ const sourceDirectory = process.argv[2];
 const destinationDirectory = process.argv[3];
 
 // Move image files from source to destination directory
-moveImages(C:\Users\jadon\Downloads\TEST\TEST-IMAGe, C:\Users\jadon\Downloads\TEST);
+moveImages(sourceDirectory, destinationDirectory);
