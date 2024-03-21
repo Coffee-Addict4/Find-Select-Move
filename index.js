@@ -1,46 +1,69 @@
 const fs = require('fs');
 const path = require('path');
 
-// Function to check if a file is an image file
-function isImage(filename) {
-    const ext = path.extname(filename).toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(ext);
-}
+// Accept source and destination directories as command line arguments
+const [, , sourceDirectory, destinationDirectory] = process.argv;
 
-// Function to move image files to a different folder
-function moveImages(sourceDir, destinationDir) {
+// Function to move folders and zip files
+function moveFiles(sourceDir, destDir) {
+    // Read the contents of the source directory
     fs.readdir(sourceDir, (err, files) => {
         if (err) {
-            console.error('Error reading directory:', err);
+            console.error('Error reading source directory:', err);
             return;
         }
 
+        // Iterate through each file in the source directory
         files.forEach(file => {
-            const sourceFile = path.join(sourceDir, file);
-            const destinationFile = path.join(destinationDir, file);
+            const sourcePath = path.join(sourceDir, file);
+            const destPath = path.join(destDir, file);
 
-            if (isImage(file)) {
-                fs.rename(sourceFile, destinationFile, err => {
-                    if (err) {
-                        console.error(`Error moving ${file}:`, err);
-                    } else {
-                        console.log(`Moved ${file} to ${destinationDir}`);
-                    }
-                });
-            }
+            // Check if the file is a directory
+            fs.stat(sourcePath, (err, stats) => {
+                if (err) {
+                    console.error('Error checking file stats:', err);
+                    return;
+                }
+
+                // If the file is a directory, move it
+                if (stats.isDirectory()) {
+                    fs.rename(sourcePath, destPath, err => {
+                        if (err) {
+                            console.error('Error moving directory:', err);
+                            return;
+                        }
+                        console.log(`Moved directory: ${sourcePath} to ${destPath}`);
+                    });
+                }
+
+                // If the file is a zip file, move it
+                else if (file.endsWith('.zip')) {
+                    fs.rename(sourcePath, destPath, err => {
+                        if (err) {
+                            console.error('Error moving zip file:', err);
+                            return;
+                        }
+                        console.log(`Moved zip file: ${sourcePath} to ${destPath}`);
+                    });
+                }
+            });
         });
     });
 }
 
-// Check if command-line arguments are provided
-if (process.argv.length < 4) {
-    console.error('Usage: node script.js <source_directory> <destination_directory>');
+// Check if source and destination directories are provided
+if (!sourceDirectory || !destinationDirectory) {
+    console.error('Usage: node moveFiles.js <source_directory> <destination_directory>');
     process.exit(1);
 }
 
-// Get source and destination directories from command-line arguments
-const sourceDirectory = process.argv[2];
-const destinationDirectory = process.argv[3];
+// Create destination directory if it does not exist
+fs.mkdir(destinationDirectory, { recursive: true }, err => {
+    if (err) {
+        console.error('Error creating destination directory:', err);
+        return;
+    }
 
-// Move image files from source to destination directory
-moveImages(sourceDirectory, destinationDirectory);
+    // Move files from source to destination
+    moveFiles(sourceDirectory, destinationDirectory);
+});
