@@ -1,0 +1,19 @@
+{
+  "name": "find-select-move",
+  "version": "1.0.0",
+  "description": "This is a program the moves image files on mass from one directory to another.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "keywords": [
+    "File",
+    "Move"
+  ],
+  "author": "Coffee Addict 49",
+  "license": "ISC"
+}
