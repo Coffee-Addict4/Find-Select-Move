@@ -1,46 +1,49 @@
 const fs = require('fs');
 const path = require('path');
 
-// Function to check if a file is an image file
-function isImage(filename) {
-    const ext = path.extname(filename).toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(ext);
-}
+// Function to check if a given path is a file
+const isFile = (filePath) => {
+  return fs.statSync(filePath).isFile();
+};
 
-// Function to move image files to a different folder
-function moveImages(sourceDir, destinationDir) {
-    fs.readdir(sourceDir, (err, files) => {
-        if (err) {
-            console.error('Error reading directory:', err);
-            return;
-        }
+// Function to move files from one directory to another
+const moveFiles = (sourceDir, targetDir) => {
+  // Read the source directory
+  fs.readdir(sourceDir, (err, files) => {
+    if (err) {
+      console.error('Error reading directory:', err);
+      return;
+    }
 
-        files.forEach(file => {
-            const sourceFile = path.join(sourceDir, file);
-            const destinationFile = path.join(destinationDir, file);
+    // Filter out non-text files and folders
+    files.forEach((file) => {
+      const filePath = path.join(sourceDir, file);
 
-            if (isImage(file)) {
-                fs.rename(sourceFile, destinationFile, err => {
-                    if (err) {
-                        console.error(`Error moving ${file}:`, err);
-                    } else {
-                        console.log(`Moved ${file} to ${destinationDir}`);
-                    }
-                });
-            }
+      if (isFile(filePath) && !filePath.endsWith('.txt')) {
+        // Construct target file path
+        const targetFilePath = path.join(targetDir, file);
+
+        // Move file
+        fs.rename(filePath, targetFilePath, (err) => {
+          if (err) {
+            console.error(`Error moving file ${filePath}:`, err);
+          } else {
+            console.log(`Moved file ${filePath} to ${targetFilePath}`);
+          }
         });
+      }
     });
+  });
+};
+
+// Get source and target directories from command-line arguments
+const args = process.argv.slice(2);
+if (args.length !== 2) {
+  console.error('Usage: node moveFiles.js <source directory> <target directory>');
+  process.exit(1);
 }
 
-// Check if command-line arguments are provided
-if (process.argv.length < 4) {
-    console.error('Usage: node script.js <source_directory> <destination_directory>');
-    process.exit(1);
-}
+const sourceDirectory = args[0];
+const targetDirectory = args[1];
 
-// Get source and destination directories from command-line arguments
-const sourceDirectory = process.argv[2];
-const destinationDirectory = process.argv[3];
-
-// Move image files from source to destination directory
-moveImages(sourceDirectory, destinationDirectory);
+moveFiles(sourceDirectory, targetDirectory);
